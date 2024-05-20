@@ -1,18 +1,20 @@
 import csvParser from "csv-parser";
 import { createReadStream } from "fs";
+import { finished } from "stream/promises";
+import stripBomStream from "strip-bom-stream";
 import { User } from "../db/user.js";
 
 function checkInvalidDocument(row, emailsInDBSet, emailsInCSVSet) {
   const nullVariables = [];
 
   if (!row.name) {
-    nullVariables.push(row.name);
+    nullVariables.push("name");
   }
   if (!row.email) {
-    nullVariables.push(row.email);
+    nullVariables.push("email");
   }
 
-  const errorString = "";
+  let errorString = "";
 
   if (nullVariables.length > 0) {
     errorString += nullVariables.join(" ,");
@@ -43,11 +45,11 @@ export async function addUsersViaCSV(filePath) {
   const existingUserEmails = existingUsers.map(({ email }) => email);
 
   const emailsInDBSet = new Set(existingUserEmails);
-  const emailsInCSVSet = new Set(existingUserEmails);
+  const emailsInCSVSet = new Set();
 
   const validDocuments = [];
 
-  const errors = []; //for informing user about what's wrong in his CSV
+  const insertionErrors = []; //for informing user about what's wrong in his CSV
 
   let rowNumber = 0;
 
@@ -60,23 +62,30 @@ export async function addUsersViaCSV(filePath) {
       emailsInCSVSet
     );
 
-    if (!invalidDocumentError) {
+    if (invalidDocumentError === "") {
       validDocuments.push(row);
     } else {
-      errors.push(`at row number ${rowNumber}: ${invalidDocumentError}`);
+      insertionErrors.push(
+        `at row number ${rowNumber}: ${invalidDocumentError}`
+      );
     }
 
     emailsInCSVSet.add(row.email);
   };
 
-  createReadStream(filePath).pipe(csvParser()).on("data", processRow);
+  const stream = createReadStream(filePath)
+    .pipe(stripBomStream()) //to remove the BOM before parsing the CSV file
+    .pipe(csvParser())
+    .on("data", processRow);
+
+  await finished(stream);
 
   await User.insertMany(validDocuments);
 
   return {
-    errors,
+    insertionErrors: insertionErrors,
     addedUsers: validDocuments.length,
-    notAddedUsers: errors.length,
+    notAddedUsers: insertionErrors.length,
     totalUsers: existingUserEmails.length + validDocuments.length,
   };
 }

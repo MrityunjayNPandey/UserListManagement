@@ -3,6 +3,8 @@
   "dependencies": {
     "csv-parser": "^3.0.0",
     "express": "^4.19.2",
-    "mongoose": "^8.4.0"
+    "mongoose": "^8.4.0",
+    "multer": "^1.4.5-lts.1",
+    "strip-bom-stream": "^5.0.0"
   }
 }
