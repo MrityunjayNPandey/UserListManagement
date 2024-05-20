@@ -8,8 +8,17 @@ const app = express();
 
 app.use(express.json());
 
-// Use the storage
-const upload = multer({ dest: "tmp/csv/" });
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "/tmp");
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + "-" + Date.now());
+  },
+});
+
+var upload = multer({ storage: storage });
+
 
 const port = 3000;
 
