@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import { addUser } from "./functions/addUser.js";
 import { addUsersViaCSV } from "./functions/addUsersViaCSV.js";
+import { listUsers, listUsersByName } from "./functions/listUsers.js";
 import connectToDB from "./mongooseConnect.js";
 
 const app = express();
@@ -19,13 +20,33 @@ var storage = multer.diskStorage({
 
 var upload = multer({ storage: storage });
 
-
 const port = 3000;
 
 connectToDB();
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+app.get("/listUsers", async (req, res) => {
+  try {
+    const users = await listUsers();
+    res.json(JSON.stringify(users));
+  } catch (err) {
+    return res.status(400).json("Error: " + err);
+  }
+});
+
+//search by prefix
+app.get("/listUsersByName", async (req, res) => {
+  const { name } = req.body;
+
+  try {
+    const users = await listUsersByName(name);
+    res.json(JSON.stringify(users));
+  } catch (err) {
+    return res.status(400).json("Error: " + err);
+  }
 });
 
 app.post("/addUser", async (req, res) => {
