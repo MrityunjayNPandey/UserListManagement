@@ -47,12 +47,13 @@ export async function addUsersViaCSV(filePath) {
   const emailsInDBSet = new Set(existingUserEmails);
   const emailsInCSVSet = new Set();
 
-  const validDocuments = [];
+  const validDocuments = []; //correct documents that can be created using insertMany
 
-  const insertionErrors = []; //for informing user about what's wrong in his CSV
+  const insertionErrors = []; //for informing user about what's wrong in his CSV(an array of strings informing error)
 
   let rowNumber = 0;
 
+  //function to process a single row.
   const processRow = (row) => {
     rowNumber++;
 

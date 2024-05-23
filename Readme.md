@@ -4,5 +4,7 @@ Run this project by running
 
 node server.js
 
+server.js is the main file(I've tried to make the code self explanatory)
 
-
+--This is deployed on vercel, this means this is working on a lambda function. 
+And as a result the 1st query might take a little longer to process.

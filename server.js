@@ -9,6 +9,7 @@ const app = express();
 
 app.use(express.json());
 
+//for storing csv file in lambda's tmp folder
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "/tmp");
@@ -28,6 +29,7 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+//lists all the users
 app.get("/listUsers", async (req, res) => {
   try {
     const users = await listUsers();
@@ -49,6 +51,7 @@ app.get("/listUsersByName", async (req, res) => {
   }
 });
 
+//for adding a single user
 app.post("/addUser", async (req, res) => {
   const userDetails = req.body;
 
@@ -60,6 +63,7 @@ app.post("/addUser", async (req, res) => {
   }
 });
 
+//for adding users via CSV 
 app.post("/addUsersViaCSV", upload.single("file"), async (req, res) => {
   try {
     const result = await addUsersViaCSV(req.file.path);
